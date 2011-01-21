@@ -1,0 +1,17 @@
+@call bet and raise [
+  | Betting     | Action | 
+  | bet, raised | call   | 
+]
+@call bet [
+  | Betting | Action | 
+  | bet     | call   | 
+]
+@bet first [
+  | Betting | Action | 
+  | nobet   | bet    | 
+]
+@bet until raise [
+  | Betting    | Action | 
+  | nobet, bet | bet    | 
+  | raised     | call   | 
+]

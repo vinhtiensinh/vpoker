@@ -1,0 +1,10 @@
+#!/usr/bin/perl
+
+my $command = shift;
+
+while(my $line = <STDIN>) {
+  chomp($line);
+  my $tmpCommand = $command;
+  $tmpCommand =~ s/<var>/$line/g;
+  `$tmpCommand`;
+}

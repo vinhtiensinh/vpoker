@@ -1,0 +1,7 @@
+flop:
+  - flush draw or straight draw, board over card: check raise
+  - over pair: do something
+
+turn:
+  - something
+  - somthing else

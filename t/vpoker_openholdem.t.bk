@@ -1,0 +1,255 @@
+use strict;
+use warnings;
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+
+use Test::More tests => 36;
+use_ok('VPoker::OpenHoldem');
+
+## ----------------------------------------------------------------------------
+## Simulate Perl_OH_Interaction.pm
+
+my $OpenHoldemSymbol = {};
+{
+    no warnings;
+
+    *VPoker::OpenHoldem::gws = sub {
+        my $symbol = shift;
+        return $OpenHoldemSymbol->{$symbol} || 0;
+    };
+
+    *VPoker::OpenHoldem::gwp = sub {
+        my $number = shift;
+        return $OpenHoldemSymbol->{"playerName$number"} || '';
+    };
+
+    *VPoker::OpenHoldem::gwt = sub {
+        return $OpenHoldemSymbol->{'tableName'} || '';
+    };
+}
+
+## ----------------------------------------------------------------------------
+
+is( VPoker::OpenHoldem::player(), undef, 'player has not been initialize' );
+is( VPoker::OpenHoldem::table(),  undef, 'table has not been initialize' );
+
+$OpenHoldemSymbol = {
+    issittingin => 1,
+    ismanual    => 0,
+    chair       => 4,
+    playerName4 => 'Vinhking',
+    balance     => 100,
+};
+
+VPoker::OpenHoldem::pl_allin();
+isa_ok( VPoker::OpenHoldem::table(), 'VPoker::Table', 'table is initialized' );
+
+## 1,2,3,4,5,7,8,9 are sitting, 0 and 6 chairs are empty
+$OpenHoldemSymbol = {
+    playersseatedbits => 958,
+    issittingin       => 1,
+    chair             => 4,
+    playerName1       => 'Erasmus',
+    balance1          => 100,
+    playerName2       => 'Anders',
+    balance2          => 100,
+    playerName3       => 'Ginger',
+    balance3          => 100,
+    playerName4       => 'Vinhking',
+    balance4          => 100,
+    playerName5       => 'Crusoe',
+    balance5          => 100,
+    playerName7       => 'Hari',
+    balance7          => 100,
+    playerName8       => 'Sanja',
+    balance8          => 100,
+    playerName9       => 'Hooke',
+    balance9          => 100,
+
+};
+
+## Only 1, 3, 4, 8, 9 dealt
+## blind are 9, 1. dealer on 8
+$OpenHoldemSymbol = {
+    %$OpenHoldemSymbol,
+    playersdealtbits   => 794,
+    dealerchair        => 8,
+    playersblindbits   => 514,
+    sblind             => 1,
+    bblind             => 2,
+    currentbet9        => 1,
+    currentbet1        => 2,
+    playersplayingbits => 794,
+};
+
+VPoker::OpenHoldem::cache_OHSymbols();
+VPoker::OpenHoldem::start_new_hand();
+
+foreach my $chairNo (qw/1 3 4 8 9/) {
+    ok(
+        VPoker::OpenHoldem::table()->chair($chairNo)->in_play,
+        "player $chairNo dealt and in play",
+    );
+}
+
+is(
+    VPoker::OpenHoldem::table()->chair(9)->next_playing->number,
+    1, 'Next playing end to start',
+);
+
+foreach my $chairNo (qw/2 5 7/) {
+    ok(
+        !VPoker::OpenHoldem::table()->chair($chairNo)->in_play,
+        "player $chairNo are not dealt and not in play",
+    );
+}
+
+is(
+    VPoker::OpenHoldem::current_hand()->small_blind_chair->number,
+    9, 'small blind chair correct',
+);
+
+is(
+    VPoker::OpenHoldem::current_hand()->big_blind_chair->number,
+    1, 'big blind chair correct',
+);
+
+my $hooke = VPoker::OpenHoldem::table()->chair(9)->player;
+is(
+    VPoker::OpenHoldem::current_hand()->last_action_of($hooke)->action,
+    'post', 'action log hooke post',
+);
+
+my $erasmus = VPoker::OpenHoldem::table()->chair(1)->player;
+is(
+    VPoker::OpenHoldem::current_hand()->last_action_of($erasmus)->action,
+    'post', 'action log erasmus post',
+);
+
+is(
+    VPoker::OpenHoldem::current_hand()->dealer_chair->number,
+    8, 'dealer chair correct',
+);
+is(
+    VPoker::OpenHoldem::current_hand()->to_act->name,
+    'Ginger', 'fist to act is ginger',
+);
+
+## ----------------- Check bet position ---------------------------------------
+is(
+    VPoker::OpenHoldem::current_hand()->preflop->player_at_position(1)->name,
+    'Hooke', 'Hooke is the next to dealer in play',
+);
+
+is(
+    VPoker::OpenHoldem::current_hand()->preflop->player_at_position(3)->name,
+    'Ginger', 'correct player Ginger at bet position 3',
+);
+
+is(
+    VPoker::OpenHoldem::current_hand()->preflop->player_at_position(5)->name,
+    'Sanja', 'correct player on last bet position',
+);
+
+is(
+    VPoker::OpenHoldem::current_hand()->preflop->player_at_position(6),
+    undef, 'correct player on last bet position',
+);
+
+## ----------------------------------------------------------------------------
+
+VPoker::OpenHoldem::update_player_action();
+is(
+    VPoker::OpenHoldem::current_hand()->to_act->name,
+    'Ginger', 'cant update, nothing changed',
+);
+
+$OpenHoldemSymbol = {
+    %$OpenHoldemSymbol,
+    currentbet3 => 2,
+    currentbet4 => 2,
+};
+
+VPoker::OpenHoldem::cache_OHSymbols();
+VPoker::OpenHoldem::update_player_action();
+is(
+    VPoker::OpenHoldem::current_hand()->to_act->name,
+    'Vinhking', 'forceUpdate, to act is now Vinking',
+);
+
+my $ginger = VPoker::OpenHoldem::table()->chair(3)->player;
+is(
+    VPoker::OpenHoldem::current_hand()->last_action_of($ginger)->action,
+    VPoker::Action::ACTION_CALL(),
+    'ginger call',
+);
+
+# update action vinh king call
+VPoker::OpenHoldem::update_player_action();
+
+# player 8 and 9 fold, 1, 3, 4 left
+$OpenHoldemSymbol->{'playersplayingbits'} = 26;
+VPoker::OpenHoldem::cache_OHSymbols();
+
+VPoker::OpenHoldem::update_player_action();
+VPoker::OpenHoldem::update_player_action();
+
+my $sanja = VPoker::OpenHoldem::table()->chair(8)->player;
+ok( VPoker::OpenHoldem::current_hand()->last_action_of($sanja)->is_fold,
+    'sanja fold', );
+ok( VPoker::OpenHoldem::current_hand()->last_action_of($hooke)->is_fold,
+    'hooke fold', );
+
+is( VPoker::OpenHoldem::current_hand()->to_act, $erasmus, 'eramus to act', );
+
+VPoker::OpenHoldem::update_player_action();
+
+is(
+    VPoker::OpenHoldem::current_hand()->to_act,
+    $erasmus,
+    'after call update still eramus coz we cant tell if he has acted or not',
+);
+
+$OpenHoldemSymbol->{'betround'} = 2;
+VPoker::OpenHoldem::update_player_action( forceUpdate => 1 );
+is(
+    VPoker::OpenHoldem::current_hand()->to_act,
+    undef, 'call update with forceUpdate make eramus act',
+);
+
+is(
+    VPoker::OpenHoldem::current_hand()->last_action_of($erasmus)->action,
+    'check', 'so erasmus check',
+);
+
+$OpenHoldemSymbol = {
+    %$OpenHoldemSymbol,
+    currentbet1 => 0,
+    currentbet3 => 0,
+    currentbet4 => 0,
+};
+
+VPoker::OpenHoldem::cache_OHSymbols();
+VPoker::OpenHoldem::current_hand()->deal( 'Ts', 'Jd', 'Kc' );
+ok(
+    VPoker::OpenHoldem::current_hand()->bet_round->is_flop,
+    'currently on flop',
+);
+## So everyone check update until the end of bet round
+VPoker::OpenHoldem::update_player_action_until(undef);
+
+my $vinhking = VPoker::OpenHoldem::table()->chair(4)->player;
+is(
+    VPoker::OpenHoldem::current_hand()->last_action_of($erasmus)->action,
+    'check', 'eramus check again',
+);
+
+is(
+    VPoker::OpenHoldem::current_hand()->last_action_of($ginger)->action,
+    'check', 'ginger also check',
+);
+
+is(
+    VPoker::OpenHoldem::current_hand()->last_action_of($vinhking)->action,
+    'check', 'and vinhking check to',
+);

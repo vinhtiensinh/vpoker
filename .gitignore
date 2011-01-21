@@ -1,0 +1,7 @@
+*.swp
+.*.*.swp
+*cover*.*
+*.pmbk
+*~
+cover_db
+tags

@@ -1,0 +1,64 @@
+1: Setup Clean Window XP SP2
+  - Setting up so that the machine will have a fixed IP Address on the local network
+    From Virtualbox window -> Setting -> Network -> Adapter 2 tab ->
+       Attached to 'Host only Adapter' (check that name should be vboxnet0)
+
+2: Create 3 accounts:
+    - Neo (codename for Ninja) : limited account
+    - Peter (Poker)            : limited account
+    - Adrian (Admin)           : admin account
+
+3: Setting up For Adrian account
+
+    - Login As Adrian Account
+
+    - Create a Folder with an innocent name
+      mkdir NeoFiles
+
+    - Disable simple file sharing
+      Start -> Control Panel -> Appearances and Theme ->
+        Folder Options -> View Tab -> uncheck 'Use simple file sharing'
+
+    - Give basic acess to NeoFiles folder to Neo
+      Right Click on NeoFiles -> Properties -> Security -> Group or User Names -> Add
+      Enter Neo and press OK
+
+    - Remove access from others
+      Click Advanced -> uncheck 'Inherit from parent the permission entries ...' -> click Remove
+
+    - Give full access to Neo
+      Click on 'Full Control' -> Apply -> OK
+
+    - Setting an IP Address for This Virtual Machine
+      My Network Place -> Right Click on Ethernet 2 -> Properties ->
+         Scroll down to 'Internet Protocol' -> Click on TCP/IP -> Properties ->
+             select 'Use the Following IP Address'
+                - Enter IP Address
+                - Sub mask should be '255.255.255.0'
+      Turn Off Firewall and check that we can ping from and to this machine
+
+4. Setting up Neo Account
+    
+    - Login as Neo
+    
+    - Change the Owner of NeoFiles to Neo
+      - Right Click on NeoFiles -> Property -> Security ->
+         Click on Neo to Select -> check 'Replace owner'
+      - Click on 'Permission' -> check 'Replace permission entries on all child objects...' ->
+         Apply -> Yes on confirmation popup
+
+    - Install bring inside NeoFile folder
+      Download bring.exe from http://www.winholdem.net/bring/?submit=BRING+HOME+PAGE
+      Do not download from this account, download from other machine and use a external
+      Drive to copy it to this folder
+      Rename it to some innocent name. TorrentMaster.exe for example
+
+5. Setting up the Peter Account
+
+    - Create shortcut to run bring as Neo Account
+      Create a shortcut on the Desktop of Peter Account, name it something with an innocent icon(or whatever)
+      Right Click -> Property -> Advance -> check run with different credential
+
+-----------------------------------------------------------------------------------------------
+
+That should be it

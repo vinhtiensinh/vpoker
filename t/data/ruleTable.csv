@@ -1,0 +1,4 @@
+| bet round | hole cards        | position     | action  | name                      | description       |
+| preflop   | suited connectors | early        | bet 100 | preflop suited connectors |                   |
+| flop      | AQ & suited       |early, middle | bet 200 | flop big cards            |                   |
+|  ^        | AA                |              | bet 300 |                           | whatever position |
