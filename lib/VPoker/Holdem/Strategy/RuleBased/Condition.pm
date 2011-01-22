@@ -135,6 +135,25 @@ sub replicate {
     return $replication;
 }
 
+sub to_string {
+    my ($self) = @_;
+    my @values = ();
+    if (ref($self->value) eq 'ARRAY') {
+        foreach my $ivalue (@{$self->value}) {
+            if (ref ($ivalue) eq 'ARRAY') {
+                push @values, join('&', sort @$ivalue);
+            }
+            else {
+                push @values, $ivalue;
+            }
+        }
+    }
+    else {
+        push @values, $self->value;
+    }
+    return sprintf("%s.%s", $self->name, join(';', sort @values));
+}
+
 sub validator {
     return VPoker::Holdem::Strategy::RuleBased::ValueValidator->new;
 }

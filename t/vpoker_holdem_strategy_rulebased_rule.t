@@ -5,7 +5,7 @@ use lib "$FindBin::Bin/../lib";
 no warnings 'redefine';
 no warnings 'once';
 
-use Test::More tests => 8;
+use Test::More qw(no_plan);
 use VPoker::Holdem::Strategy;
 use VPoker::Holdem::Strategy::RuleBased;
 use VPoker::Holdem::BetRound;
@@ -117,6 +117,21 @@ my %strategyAction = ();
 
 }
 
+# test stringify_conditions
+{
+    is(
+        _make_rule(
+            conditions => {
+               'bet round'  => 'flop',
+               'hole cards' => 'pair',
+               'position'   => 'early',
+            },
+        )->stringify_conditions,
+        'bet round.flop|hole cards.pair|position.early',
+        'stringify the conditions correctly'
+    );
+}
+    
 
 sub test_satisfied {
     *VPoker::Holdem::Strategy::table = sub {return VPoker::Table->new};

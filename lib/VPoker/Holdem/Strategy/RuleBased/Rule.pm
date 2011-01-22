@@ -44,22 +44,17 @@ sub new {
     return $self;
 }
 
+sub stringify_conditions {
+    my ($self) = @_;
+    return join('|', sort map {$_->to_string} @{$self->conditions});
+}
+
 sub is_satisfied {
     my $self = shift;
-    #debug_message('Checking against ' . $self->as_string);
     foreach my $condition ( @{ $self->conditions } ) {
         return $self->FALSE unless $condition->is_satisfied($condition->value);
     }
     return $self->TRUE;
-}
-
-sub as_string {
-    my $self = shift;
-    my $stringValue = '';
-    foreach my $condition (@{$self->conditions}) {
-        $stringValue .= sprintf('%s=%s ', $condition->name, $self->to_string($condition->value));
-    }
-    $stringValue .= ' ' . $self->action->as_string;
 }
 
 sub validate {
