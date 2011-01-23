@@ -38,30 +38,26 @@ sub new_rule {
 
     my $rule_id = '';
 
-    if($rule->isa('VPoker::Holdem::Strategy::RuleBased::RuleTable')) {
-        $rule_id = $rule->name;
-        unless ($rule_id) {
-            if (exists $self->ruleset->{'anonymous'}) {
-                die ('cant have two anonymous rule tables inside a rule table');
-            }
-            else {
-                $rule_id = 'anonymous';
-            }
-        }
-    }
-    elsif ($rule->isa('VPoker::Holdem::Strategy::RuleBased::Rule')) {
-        $rule_id = $rule->name || $rule->stringify_conditions || 'no_condition' ;
+    if ($rule->isa('VPoker::Holdem::Strategy::RuleBased::Rule')) {
+        $rule_id = $rule->name || $rule->stringify_conditions;
     }
     else {
-        $rule_id = $rule->name || 'no_condition';
+        $rule_id = $rule->name;
     }
 
-    if ($rule_id) {
-        unless (exists $self->ruleset->{$rule_id}) {
-            push @{$self->order_of_execution}, $rule_id;
+    unless ($rule_id) {
+        if (exists $self->ruleset->{'anonymous'}) {
+            die ('cant have more than 1 anonymous rules inside a rule table');
         }
-        $self->ruleset->{$rule_id} = $rule;
+        else {
+            $rule_id = 'anonymous';
+        }
     }
+
+    unless (exists $self->ruleset->{$rule_id}) {
+        push @{$self->order_of_execution}, $rule_id;
+    }
+    $self->ruleset->{$rule_id} = $rule;
 }
 
 sub apply {
