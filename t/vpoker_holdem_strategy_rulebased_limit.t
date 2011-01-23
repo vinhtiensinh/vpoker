@@ -48,11 +48,11 @@ test_rulebased_strategy(
 
 push @$masterTable, ['turn','','','turn', 'apply turn table please'];
 my $turnTable = [
-    ['hole cards','action' , 'name'    ],
-#####################################################################################
-    ['pair'      ,'bet 100', 'pair'    ],
-    [['AK', 'AQ'],'bet 400', 'big card'],
-    ['AJ'        ,'bet 300', 'big card'],
+    ['hole cards','action' ],
+#########################################################################
+    ['pair'      ,'bet 100'],
+    [['AK', 'AQ'],'bet 400'],
+    ['AJ'        ,'bet 300'],
 ];
 
 test_rulebased_strategy(

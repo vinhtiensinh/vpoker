@@ -63,7 +63,7 @@ sub create_rule_table_horizontal_format {
     }
 
     my $subtext = join("\n", @blocktext);
-    $ruleTable->add_rule($self->create_single_rule($subtext, $strategy, $root)) if $subtext;
+    $ruleTable->new_rule($self->create_single_rule($subtext, $strategy, $root)) if $subtext;
   }
 
   $ruleTable->strategy($strategy);
@@ -118,7 +118,7 @@ sub create_single_rule {
   else {
       $strategy->decision($root . '.' . $name, $action) if $name && $root;
       $action->name($name);
-      return $action
+      return $action;
   }
 }
 

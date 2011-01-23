@@ -3,7 +3,7 @@ package VPoker::Holdem::Strategy::RuleBased::RuleTable;
 use base qw(VPoker::Holdem::Strategy::RuleBased::Action);
 use VPoker::Holdem::Strategy::RuleBased::Rule;
 
-__PACKAGE__->has_attributes('rules');
+__PACKAGE__->has_attributes('order_of_execution', 'ruleset');
 
 sub new {
     my ($class, %args) = @_;
@@ -18,11 +18,50 @@ sub new {
     return $self;
 }
 
-sub add_rule {
-    my ($self, $rule) = @_;
-    $self->rules([]) unless $self->rules;
 
-    push @{$self->rules}, $rule;
+sub rules {
+    my ($self) = @_;
+    my $rules = [];
+    foreach my $rule_id (@{$self->order_of_execution}) {
+        push @$rules, $self->ruleset->{$rule_id};
+
+    }
+
+    return $rules;
+}
+
+sub new_rule {
+    my ($self, $rule) = @_;
+    $self->order_of_execution([]) unless $self->order_of_execution;
+    $self->ruleset({}) unless $self->ruleset;
+
+
+    my $rule_id = '';
+
+    if($rule->isa('VPoker::Holdem::Strategy::RuleBased::RuleTable')) {
+        $rule_id = $rule->name;
+        unless ($rule_id) {
+            if (exists $self->ruleset->{'anonymous'}) {
+                die ('cant have two anonymous rule tables inside a rule table');
+            }
+            else {
+                $rule_id = 'anonymous';
+            }
+        }
+    }
+    elsif ($rule->isa('VPoker::Holdem::Strategy::RuleBased::Rule')) {
+        $rule_id = $rule->name || $rule->stringify_conditions || 'no_condition' ;
+    }
+    else {
+        $rule_id = $rule->name || 'no_condition';
+    }
+
+    if ($rule_id) {
+        unless (exists $self->ruleset->{$rule_id}) {
+            push @{$self->order_of_execution}, $rule_id;
+        }
+        $self->ruleset->{$rule_id} = $rule;
+    }
 }
 
 sub apply {
@@ -72,11 +111,8 @@ sub _parse {
                 $ruleArgs{'conditions'}->{$condition} = $value;
             }
         }
-
-        push @$rules, VPoker::Holdem::Strategy::RuleBased::Rule->new(%ruleArgs);
+        $self->new_rule(VPoker::Holdem::Strategy::RuleBased::Rule->new(%ruleArgs));
     }
-
-    $self->rules($rules);
 }
 
 sub _no_value {

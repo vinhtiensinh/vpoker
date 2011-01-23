@@ -30,7 +30,7 @@ sub _create {
                 strategy => $strategy,
             );
 
-            $rule_table->add_rule($rule);
+            $rule_table->new_rule($rule);
         }
         return $rule_table;
     }

@@ -96,18 +96,18 @@ sub validate {
       my $mainAction = shift @elements;
       die ("unknown action: $action") unless $self->_valid_action($mainAction);
       if ($self->strategy->isa('VPoker::Holdem::Strategy::Limit')) {
-        die sprintf("Unreconized action '%s'", $action) if (scalar @elements > 0);
+        die sprintf("Unrecognized action '%s'", $action) if (scalar @elements > 0);
       }
       else {
         my $amount = shift @elements;
         my $randomFactor = shift @elements;
-        die sprintf("Unreconized action '%s'", join(' ', $action, @elements)) if (scalar @elements > 0);
-        die sprintf("Unreconized action '%s'", join(' ', $action, @elements)) if ($randomFactor && $randomFactor !~ /^\d+\%$/);
+        die sprintf("Unrecognized action '%s'", join(' ', $action, @elements)) if (scalar @elements > 0);
+        die sprintf("Unrecognized action '%s'", join(' ', $action, @elements)) if ($randomFactor && $randomFactor !~ /^\d+\%$/);
 
         if($amount) {
           my $evaluator =
             VPoker::ChipEvaluator->new(table => $self->strategy->table);
-          die sprintf("Unreconized action '%s'", join(' ', $action, @elements)) unless $evaluator->validate($amount);
+          die sprintf("Unrecognized action '%s'", join(' ', $action, @elements)) unless $evaluator->validate($amount);
         }
       }
     }

@@ -12,7 +12,7 @@ use Data::Dumper;
 my $syntax_yaml = 'VPoker::Holdem::Strategy::RuleBased::DSL::Yaml' ;
 my $strategy = VPoker::Holdem::Strategy::Limit->new();
 
-diag('########## Test simple list format --------------------------------------');
+diag("\n########## Test simple list format --------------------------------------");
 my $rule_table = $syntax_yaml->create($strategy, '
     - Bet Round. preflop: bet
     - Bet Round. flop | Hand. flush draw: bet
@@ -33,8 +33,8 @@ test_simple_rule( $rule_table, 2, {
 
 test_simple_rule( $rule_table, 3, {'bet round' => 'river' } , 'check, fold');
  
-diag('########## Test simple list format ---------------------------------------');
-my $rule_table = $syntax_yaml->create($strategy, '
+diag("\n########## Test simple list format ---------------------------------------");
+$rule_table = $syntax_yaml->create($strategy, '
 two pair:
     - play straight flush
     - play two pair
