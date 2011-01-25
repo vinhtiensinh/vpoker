@@ -23,18 +23,28 @@ sub rules {
     my ($self) = @_;
     my $rules = [];
     foreach my $rule_id (@{$self->order_of_execution}) {
-        push @$rules, $self->ruleset->{$rule_id};
+        my $rule = $self->ruleset->{$rule_id};
+        if ($rule->isa('VPoker::Holdem::Strategy::RuleBased::RuleTable')) {
+            push @$rules, @{$rule->rules};
+
+        }
+        else {
+            push @$rules, $rule;
+        }
 
     }
 
     return $rules;
 }
 
+sub new_named_rule {
+    my ($self, $name, $action) = @_;
+    $self->add_order_of_execution($name);
+    $self->new_ruleset($name, $action);
+}
+
 sub new_rule {
     my ($self, $rule) = @_;
-    $self->order_of_execution([]) unless $self->order_of_execution;
-    $self->ruleset({}) unless $self->ruleset;
-
 
     my $rule_id = '';
 
@@ -46,7 +56,7 @@ sub new_rule {
     }
 
     unless ($rule_id) {
-        if (exists $self->ruleset->{'anonymous'}) {
+        if ($self->has_rule('anonymous')) {
             die ('cant have more than 1 anonymous rules inside a rule table');
         }
         else {
@@ -54,10 +64,28 @@ sub new_rule {
         }
     }
 
-    unless (exists $self->ruleset->{$rule_id}) {
-        push @{$self->order_of_execution}, $rule_id;
+    unless ($self->has_rule($rule_id)) {
+        $self->add_order_of_execution($rule_id);
     }
-    $self->ruleset->{$rule_id} = $rule;
+    $self->new_ruleset($rule_id, $rule);
+}
+
+sub has_rule {
+    my ($self, $name) = @_;
+    $self->ruleset({}) unless $self->ruleset;
+    return $self->ruleset->{$name};
+}
+
+sub new_ruleset {
+    my ($self, $name, $rule) = @_;
+    $self->ruleset({}) unless $self->ruleset;
+    $self->ruleset->{$name} = $rule;
+}
+
+sub add_order_of_execution {
+    my ($self, $item) = @_;
+    $self->order_of_execution([]) unless $self->order_of_execution;
+    push @{$self->order_of_execution}, $item;
 }
 
 sub apply {

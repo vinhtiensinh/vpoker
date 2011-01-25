@@ -35,17 +35,22 @@ test_simple_rule( $rule_table, 3, {'bet round' => 'river' } , 'check, fold');
  
 diag("\n########## Test simple list format ---------------------------------------");
 $rule_table = $syntax_yaml->create($strategy, '
-two pair:
+rules:
     - play straight flush
-    - play two pair
+    - play two pairs
     - play top pair
-play straight flush:
-  - Hand. straight flush: bet
-play two pairs: 
-  - Hand. two pairs: call
-play top pair: 
-  - Hand. two pairs: fold
+with:
+  play straight flush:
+    - Hand. straight flush: bet
+  play two pairs: 
+    - Hand. two pairs: call
+  play top pair: 
+    - Hand. top pair: fold
 ');
+
+test_simple_rule( $rule_table, 0, {'hand' => 'straight flush' } , 'bet');
+test_simple_rule( $rule_table, 1, {'hand' => 'two pairs' } , 'call');
+test_simple_rule( $rule_table, 2, {'hand' => 'top pair' } , 'fold');
 
 sub test_simple_rule {
 

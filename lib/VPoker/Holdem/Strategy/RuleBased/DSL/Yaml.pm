@@ -11,28 +11,74 @@ sub create {
     my ($self, $strategy, $string) = @_;
     print $string;
     my ($yaml, $arrayref, $yaml_string) = Load($string);
-    my $rule_table = $self->_create($strategy, $yaml);
+    my $rule_table = $self->_create_rule_table($strategy, $yaml);
     return $rule_table;
 }
 
-sub _create {
+sub _create_rule_table {
     my ($self, $strategy, $yaml) = @_;
     if (ref($yaml) eq 'ARRAY') {
         my $rule_table = VPoker::Holdem::Strategy::RuleBased::RuleTable->new();
         foreach my $rule (@$yaml) {
-            my @keys = keys %$rule;
-            my $conditions = pop @keys;
-            my $action     = $rule->{$conditions};
+            unless (ref($rule)) {
+                $rule_table->add_order_of_execution($rule);
+                next;
+            }
 
-            my $rule  = VPoker::Holdem::Strategy::RuleBased::Rule->new(
-                conditions => $self->parse_conditions($conditions, $strategy),
-                action => $action,
-                strategy => $strategy,
-            );
+            if (ref($rule) eq 'HASH') {
+                while (my ($key, $value) = each(%$rule)) {
 
-            $rule_table->new_rule($rule);
+                    if ($key =~ /\./) {
+                      $rule_table->new_rule($self->_create_rule($strategy, $key, $value));
+                    }
+                    else {
+                      $rule_table->new_named_rule($key, $self->_create_action($strategy,$value));
+                    }
+                }
+            }
         }
         return $rule_table;
+    }
+    elsif (ref($yaml) eq 'HASH') {
+        my $rule_table = $self->_create_rule_table($strategy, $yaml->{'rules'});
+
+        if ($yaml->{'with'}) {
+            while (my ($key, $value) = each(%{$yaml->{'with'}})) {
+                if ($key =~ /\./) {
+                  my $rule = $self->_create_action($strategy, {$key => $value});
+                  $rule_table->new_named_rule(
+                      $rule->stringify_conditions, $rule
+                  );
+                }
+                else {
+                  $rule_table->new_named_rule($key, $self->_create_action($strategy,$value));
+                }
+            }
+        }
+        return $rule_table;
+    }
+
+    sub _create_action {
+        my ($self, $strategy, $action) = @_;
+        if (!ref($action)) {
+            return VPoker::Holdem::Strategy::RuleBased::Action->new(action => $action);
+        }
+        elsif(ref($action) eq 'ARRAY') {
+            return $self->_create_rule_table($strategy, $action);
+        }
+        elsif(ref($action) eq 'HASH') {
+            return $self->_create_rule($strategy, $action);
+        }
+    }
+
+    sub _create_rule {
+        my ($self, $strategy, $conditions, $action) = @_;
+
+        return VPoker::Holdem::Strategy::RuleBased::Rule->new(
+            conditions => $self->parse_conditions($conditions, $strategy),
+            action => $self->_create_action($strategy, $action),
+            strategy => $strategy,
+        );
     }
 
     sub parse_conditions {
