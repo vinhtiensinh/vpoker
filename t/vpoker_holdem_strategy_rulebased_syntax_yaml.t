@@ -33,12 +33,12 @@ test_simple_rule( $rule_table, 2, {
 
 test_simple_rule( $rule_table, 3, {'bet round' => 'river' } , 'check, fold');
  
-diag("\n########## Test simple list format ---------------------------------------");
+diag("\n########## Test list hash format ---------------------------------------");
 $rule_table = $syntax_yaml->create($strategy, '
 rules:
-    - play straight flush
-    - play two pairs
-    - play top pair
+  - play straight flush
+  - play two pairs
+  - play top pair
 with:
   play straight flush:
     - Hand. straight flush: bet
@@ -48,9 +48,33 @@ with:
     - Hand. top pair: fold
 ');
 
-test_simple_rule( $rule_table, 0, {'hand' => 'straight flush' } , 'bet');
-test_simple_rule( $rule_table, 1, {'hand' => 'two pairs' } , 'call');
-test_simple_rule( $rule_table, 2, {'hand' => 'top pair' } , 'fold');
+test_simple_rule( $rule_table->rules->[0], 0, {'hand' => 'straight flush' } , 'bet');
+test_simple_rule( $rule_table->rules->[1], 0, {'hand' => 'two pairs' } , 'call');
+test_simple_rule( $rule_table->rules->[2], 0, {'hand' => 'top pair' } , 'fold');
+
+diag("\n########## Test complext list format ---------------------------------------");
+$rule_table = $syntax_yaml->create($strategy, '
+- Hole Cards. AA: &AA
+    - Board. pair: check, fold
+    - Board. trip: bet
+
+- Hole Cards. KK:
+      use: *AA
+      with:
+        Board. trip: raise
+');
+
+is(
+    $rule_table->rules->[0]->conditions->[0]->name,
+    'hole cards',
+    'correct first rule'
+);
+
+is(
+    $rule_table->rules->[0]->conditions->[0]->value,
+    'AA',
+    'correct condition value'
+);
 
 sub test_simple_rule {
 

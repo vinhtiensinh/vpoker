@@ -24,14 +24,7 @@ sub rules {
     my $rules = [];
     foreach my $rule_id (@{$self->order_of_execution}) {
         my $rule = $self->ruleset->{$rule_id};
-        if ($rule->isa('VPoker::Holdem::Strategy::RuleBased::RuleTable')) {
-            push @$rules, @{$rule->rules};
-
-        }
-        else {
-            push @$rules, $rule;
-        }
-
+        push @$rules, $rule;
     }
 
     return $rules;
