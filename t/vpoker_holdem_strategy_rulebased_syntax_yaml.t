@@ -78,6 +78,7 @@ rules:
   - hole cards. AA:
         - specific->pair
         - check raise
+        - call
 with:
     top bet:
       - hand. top pair: bet
@@ -108,8 +109,50 @@ my $check_raise = $checked_table->rules->[1];
 test_simple_rule($check_raise, 0, {'betting' => 'nobet'}, 'check');
 test_simple_rule($check_raise, 1, {'betting' => 'bet'}, 'raise');
 
-sub test_simple_rule {
+is(
+    $checked_table->rules->[2]->action,
+    'call',
+    'third rule is an action'
+);
 
+## -- Test load from files ----------------------------------------------------
+$rule_table = $syntax_yaml->load_file(
+    $strategy, "$FindBin::Bin/data/yaml/vpoker.yaml.vpk");
+
+$syntax_yaml->load_file(
+    $strategy, "$FindBin::Bin/data/yaml/_betting.yaml.vpk");
+
+is(
+    $strategy->decision('vpoker'),
+    $rule_table,
+    'load the rule table into strategy correctly with file name'
+);
+
+test_simple_rule($rule_table, 0, {'hole cards' => 'AA'});
+
+$checked_table = $rule_table->rules->[0]->action;
+test_simple_rule($checked_table, 0, {'hand' => 'quad'}, 'vpoker->slow play');
+
+is(
+    $checked_table->rules->[1],
+    $strategy->decision('call one bet'),
+    'correctly refer to the strategy global rule',
+);
+
+is(
+    $checked_table->rules->[2],
+    $rule_table->ruleset('all else'),
+    'correctly refer to the local rule',
+);
+
+## -- Test load all files ----------------------------------------------------
+$strategy = VPoker::Holdem::Strategy::RuleBased::Limit->new();
+
+$syntax_yaml->strategy($strategy, "$FindBin::Bin/data/yaml");
+
+$strategy->validate;
+
+sub test_simple_rule {
     my ($rule_table, $index, $expected_conditions, $expected_action) = @_;
     diag("rule $index");
 

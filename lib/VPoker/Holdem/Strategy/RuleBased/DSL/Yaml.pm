@@ -6,6 +6,84 @@ use YAML;
 use VPoker::Holdem::Strategy::RuleBased::RuleTable qw();
 use VPoker::Holdem::Strategy::RuleBased::Rule qw();
 use VPoker::Holdem::Strategy::RuleBased::ConditionFactory qw();
+use File::Basename;
+use File::Spec;
+
+
+sub strategy {
+    my ($self, $strategy, $path) = @_;
+    my @files = $self->load_all_files_recursively($path);
+    foreach my $file (@files) {
+      $self->load_file($strategy, $file);
+    }
+}
+sub load_all_files_recursively {
+    my ($self, $path) = @_;
+    my @files = ();
+    opendir DIR, $path;
+
+    my @dir_files = readdir DIR;
+    foreach my $file (@dir_files) {
+        next if ($file eq '.') or ($file eq '..');
+        my $full_path = File::Spec->catfile($path, $file);
+        push @files, $full_path if $self->is_yaml_vpk_file($full_path);
+        push @files, $self->load_all_files_recursively($full_path) if $self->is_dir($full_path);
+    }
+    close DIR;
+
+    return @files;
+}
+
+sub is_yaml_vpk_file {
+    my ($self, $path) = @_;
+    return (-f $path and $path =~/\.yaml\.vpk$/);
+}
+
+sub is_dir {
+    my ($self, $path) = @_;
+    return (-d $path);
+}
+
+sub load_file {
+    my ($self, $strategy, $file) = @_;
+    my $rule_table;
+
+    eval {
+        my ($name, $directories, $suffix) = File::Basename::fileparse($file);
+        $name =~ s/\.yaml\.vpk$//;
+        my $string = $self->read_file($file, $name);
+        $rule_table = $self->create($strategy, $string);
+        $strategy->decision($name, $rule_table);
+
+        foreach my $key (keys %{$rule_table->ruleset}) {
+            $strategy->decision(sprintf("%s->%s", $name, $key), $rule_table->ruleset($key));
+        }
+    };
+
+    if ($@) {
+        die("Failed to load $file \n $@");
+    }
+
+    return $rule_table;
+}
+
+sub read_file {
+    my ($self, $file, $name) = @_;
+    open FILE, "$file" or die "Couldn't open file: $!"; 
+    my @lines = ();
+    while(my $line = <FILE>) {
+        next if $line =~ /^\s*#/;
+        $line =~ s/#.*\n/\n/;
+        push @lines, $line;
+    }
+    my $string = join("", @lines); 
+    close FILE;
+
+    my $local_replacement = "$name->";
+    $string =~ s/\~/$local_replacement/g;
+
+    return $string;
+}
 
 sub create {
     my ($self, $strategy, $string) = @_;
@@ -72,7 +150,9 @@ sub _create_rule_table {
     sub _create_action {
         my ($self, $strategy, $action) = @_;
         if (!ref($action)) {
-            return VPoker::Holdem::Strategy::RuleBased::Action->new(action => $action);
+            return VPoker::Holdem::Strategy::RuleBased::Action->new(
+                action => $action, strategy => $strategy
+            );
         }
         else {
             return $self->_create_rule_table($strategy, $action);

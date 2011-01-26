@@ -10,8 +10,6 @@ use_ok('VPoker::Test::Table');
 my $strategy = VPoker::Holdem::Strategy::RuleBased::Limit->new();
 VPoker::OpenHoldem::StrategyLoader->strategy($strategy, "$FindBin::Bin/data/StrategyFiles");
 
-use Data::Dumper;
-print Dumper($strategy->decision('bet first'));
 $strategy->validate;
 
 is(

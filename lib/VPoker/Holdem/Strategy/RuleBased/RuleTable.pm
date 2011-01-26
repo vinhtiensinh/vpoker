@@ -4,6 +4,7 @@ use warnings;
 
 use base qw(VPoker::Holdem::Strategy::RuleBased::Action);
 use VPoker::Holdem::Strategy::RuleBased::Rule;
+use VPoker::Holdem::Strategy::RuleBased::Action;
 
 __PACKAGE__->has_attributes('order_of_execution', '_ruleset');
 
@@ -35,6 +36,12 @@ sub rules {
         }
         elsif($self->strategy->decision($rule_id)) {
             push @$rules, $self->strategy->decision($rule_id);
+        }
+        else {
+            push @$rules, VPoker::Holdem::Strategy::RuleBased::Action->new(
+                action => $rule_id,
+                strategy => $self->strategy,
+            );
         }
     }
 

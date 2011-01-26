@@ -1,0 +1,11 @@
+rules:
+  - Hole Cards. AA:
+      - Hand. quad: ~slow play
+      - call one bet
+      - ~all else
+with:
+  slow play:
+    - Betting. nobet | Position. last: bet
+    - call
+  all else:
+    - Hand. fullhouse: bet

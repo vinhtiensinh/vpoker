@@ -91,6 +91,10 @@ sub validate {
     $action =~ s/\s*$//g;
     $action =~ s/\s+$/ /g;
 
+    unless ($self->strategy) {
+        die("action without strategy $action");
+    }
+
     if ( not defined $self->strategy->decision($action) ) {
       my @elements = split(' ', $action);
       my $mainAction = shift @elements;
