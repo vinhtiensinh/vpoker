@@ -20,7 +20,7 @@ sub _create_rule_table {
     my ($self, $strategy, $yaml) = @_;
 
     if (ref($yaml) eq 'ARRAY') {
-        my $rule_table = VPoker::Holdem::Strategy::RuleBased::RuleTable->new();
+        my $rule_table = VPoker::Holdem::Strategy::RuleBased::RuleTable->new(strategy => $strategy);
         foreach my $rule (@$yaml) {
             unless (ref($rule)) {
                 $rule_table->add_order_of_execution($rule);

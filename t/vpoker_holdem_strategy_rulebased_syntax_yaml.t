@@ -6,11 +6,11 @@ use Test::More qw(no_plan);
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use_ok('VPoker::Holdem::Strategy::RuleBased::DSL::Yaml');
-use VPoker::Holdem::Strategy::Limit;
+use VPoker::Holdem::Strategy::RuleBased::Limit;
 use Data::Dumper;
 
 my $syntax_yaml = 'VPoker::Holdem::Strategy::RuleBased::DSL::Yaml' ;
-my $strategy = VPoker::Holdem::Strategy::Limit->new();
+my $strategy = VPoker::Holdem::Strategy::RuleBased::Limit->new();
 
 diag("\n########## Test simple list format --------------------------------------");
 my $rule_table = $syntax_yaml->create($strategy, '
@@ -64,17 +64,49 @@ $rule_table = $syntax_yaml->create($strategy, '
         Board. trip: raise
 ');
 
-is(
-    $rule_table->rules->[0]->conditions->[0]->name,
-    'hole cards',
-    'correct first rule'
-);
+diag("     #### test rule table rules");
+test_simple_rule( $rule_table, 0, {'hole cards' => 'AA' });
+test_simple_rule( $rule_table, 1, {'hole cards' => 'KK' });
 
-is(
-    $rule_table->rules->[0]->conditions->[0]->value,
-    'AA',
-    'correct condition value'
-);
+diag("     #### test rule table board trip rule");
+test_simple_rule( $rule_table->rules->[1]->action, 0, {'board' => 'pair' }, 'check, fold');
+test_simple_rule( $rule_table->rules->[1]->action, 1, {'board' => 'trip' }, 'raise');
+
+diag("\n########## Test reference to global and local value ------");
+$rule_table = $syntax_yaml->create($strategy, '
+rules:
+  - hole cards. AA:
+        - specific->pair
+        - check raise
+with:
+    top bet:
+      - hand. top pair: bet
+');
+
+my $rule_table_specific = $syntax_yaml->create($strategy,'
+- pair:
+    - hand. pair: raise
+');
+
+my $rule_table_global = $syntax_yaml->create($strategy, '
+- check raise:
+    - betting. nobet: check
+    - betting. bet: raise
+');
+
+$strategy->decision('preflop', $rule_table);
+$strategy->decision('specific', $rule_table_specific);
+$strategy->decision('_global', $rule_table_global);
+
+test_simple_rule($rule_table, 0, {'hole cards' => 'AA' });
+my $checked_table = $rule_table->rules->[0]->action;
+
+my $specific_pair = $checked_table->rules->[0];
+test_simple_rule($specific_pair, 0, {'hand' => 'pair'}, 'raise');
+
+my $check_raise = $checked_table->rules->[1];
+test_simple_rule($check_raise, 0, {'betting' => 'nobet'}, 'check');
+test_simple_rule($check_raise, 1, {'betting' => 'bet'}, 'raise');
 
 sub test_simple_rule {
 
@@ -112,10 +144,12 @@ sub test_simple_rule {
         $condition_index++;
     }
 
-    is( 
-        $rule->action->action,
-        $expected_action,
-        "  has correct action($expected_action)"
-    );
+    if($expected_action) {
+        is( 
+            $rule->action->action,
+            $expected_action,
+            "  has correct action($expected_action)"
+        );
+    }
 }
 

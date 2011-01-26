@@ -1,4 +1,6 @@
 package VPoker::Holdem::Strategy::RuleBased::RuleTable;
+use strict;
+use warnings;
 
 use base qw(VPoker::Holdem::Strategy::RuleBased::Action);
 use VPoker::Holdem::Strategy::RuleBased::Rule;
@@ -23,8 +25,17 @@ sub rules {
     my ($self) = @_;
     my $rules = [];
     foreach my $rule_id (@{$self->order_of_execution}) {
-        my $rule = $self->ruleset->{$rule_id};
-        push @$rules, $rule;
+        if ($rule_id =~ /\-\>/) {
+            my ($decision_name, $rulename) = split('->', $rule_id);
+            push @$rules, $self->strategy->decision($decision_name)->ruleset->{$rulename};
+        }
+        elsif($self->ruleset && exists $self->ruleset->{$rule_id}) {
+            my $rule = $self->ruleset->{$rule_id};
+            push @$rules, $rule;
+        }
+        elsif($self->strategy->decision($rule_id)) {
+            push @$rules, $self->strategy->decision($rule_id);
+        }
     }
 
     return $rules;

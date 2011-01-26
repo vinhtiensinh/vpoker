@@ -22,9 +22,8 @@ sub decision {
     $self->decisions({}) unless $self->decisions;
     if ($ruleTable) {
         if ($self->global($decision)) {
-            foreach my $rule (@{$ruleTable->rules}) {
-                die ("global strategy '$decision' has rule without name") unless $rule->name;
-                $self->decision($rule->name, $rule);
+            foreach my $rulename (keys %{$ruleTable->ruleset}) {
+                $self->decision($rulename, $ruleTable->ruleset->{$rulename});
             }
         }
         $self->decisions->{$decision} = $ruleTable
