@@ -5,7 +5,7 @@ use warnings;
 use base qw(VPoker::Holdem::Strategy::RuleBased::Action);
 use VPoker::Holdem::Strategy::RuleBased::Rule;
 
-__PACKAGE__->has_attributes('order_of_execution', 'ruleset');
+__PACKAGE__->has_attributes('order_of_execution', '_ruleset');
 
 sub new {
     my ($class, %args) = @_;
@@ -27,10 +27,10 @@ sub rules {
     foreach my $rule_id (@{$self->order_of_execution}) {
         if ($rule_id =~ /\-\>/) {
             my ($decision_name, $rulename) = split('->', $rule_id);
-            push @$rules, $self->strategy->decision($decision_name)->ruleset->{$rulename};
+            push @$rules, $self->strategy->decision($decision_name)->ruleset($rulename);
         }
-        elsif($self->ruleset && exists $self->ruleset->{$rule_id}) {
-            my $rule = $self->ruleset->{$rule_id};
+        elsif($self->ruleset($rule_id)) {
+            my $rule = $self->ruleset($rule_id);
             push @$rules, $rule;
         }
         elsif($self->strategy->decision($rule_id)) {
@@ -41,10 +41,24 @@ sub rules {
     return $rules;
 }
 
+sub ruleset {
+    my ($self, $name, $value) = @_;
+    $self->_ruleset({}) unless $self->_ruleset;
+    if ($value) {
+        $self->_ruleset->{$name} = $value;
+    }
+    elsif ($name) {
+        return $self->_ruleset->{$name};
+    }
+    else {
+        return $self->_ruleset;
+    }
+}
+
 sub new_named_rule {
     my ($self, $name, $action) = @_;
     $self->add_order_of_execution($name);
-    $self->new_ruleset($name, $action);
+    $self->ruleset($name, $action);
 }
 
 sub new_rule {
@@ -71,19 +85,12 @@ sub new_rule {
     unless ($self->has_rule($rule_id)) {
         $self->add_order_of_execution($rule_id);
     }
-    $self->new_ruleset($rule_id, $rule);
+    $self->ruleset($rule_id, $rule);
 }
 
 sub has_rule {
     my ($self, $name) = @_;
-    $self->ruleset({}) unless $self->ruleset;
-    return $self->ruleset->{$name};
-}
-
-sub new_ruleset {
-    my ($self, $name, $rule) = @_;
-    $self->ruleset({}) unless $self->ruleset;
-    $self->ruleset->{$name} = $rule;
+    return $self->ruleset($name);
 }
 
 sub add_order_of_execution {
