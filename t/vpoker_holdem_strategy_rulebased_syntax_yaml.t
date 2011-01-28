@@ -55,7 +55,7 @@ test_simple_rule( $rule_table->rules->[2], 0, {'hand' => 'top pair' } , 'fold');
 diag("\n########## Test complext list format ---------------------------------------");
 $rule_table = $syntax_yaml->create($strategy, '
 - Hole Cards. AA: &AA
-    - Board. pair: check, fold
+    - Board. pair; trip & over card: check, fold
     - Board. trip: bet
 
 - Hole Cards. KK:
@@ -69,7 +69,12 @@ test_simple_rule( $rule_table, 0, {'hole cards' => 'AA' });
 test_simple_rule( $rule_table, 1, {'hole cards' => 'KK' });
 
 diag("     #### test rule table board trip rule");
-test_simple_rule( $rule_table->rules->[1]->action, 0, {'board' => 'pair' }, 'check, fold');
+test_simple_rule(
+    $rule_table->rules->[1]->action,
+    0,
+    { 'board' => ['pair', ['trip', 'over card']] },
+    'check, fold'
+);
 test_simple_rule( $rule_table->rules->[1]->action, 1, {'board' => 'trip' }, 'raise');
 
 diag("\n########## Test reference to global and local value ------");
@@ -86,7 +91,7 @@ with:
 
 my $rule_table_specific = $syntax_yaml->create($strategy,'
 - pair:
-    - hand. pair: raise
+    - hand. pair & top kicker: raise
 ');
 
 my $rule_table_global = $syntax_yaml->create($strategy, '
@@ -103,7 +108,7 @@ test_simple_rule($rule_table, 0, {'hole cards' => 'AA' });
 my $checked_table = $rule_table->rules->[0]->action;
 
 my $specific_pair = $checked_table->rules->[0];
-test_simple_rule($specific_pair, 0, {'hand' => 'pair'}, 'raise');
+test_simple_rule($specific_pair, 0, {'hand' => [['pair', 'top kicker']]}, 'raise');
 
 my $check_raise = $checked_table->rules->[1];
 test_simple_rule($check_raise, 0, {'betting' => 'nobet'}, 'check');

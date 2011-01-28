@@ -188,18 +188,32 @@ sub _create_rule_table {
     }
 
     sub parse_condition_values {
-        my ($self, $string) = @_;
+        my ($self, $string, $valueset) = @_;
         if ($string =~ /;/) {
             my $normalise_values = [];
             my @values = split(';', $string);
             foreach my $value (@values) {
-                push @$normalise_values, $self->clean_up_whitespace($value);
+                push @$normalise_values, $self->parse_condition_values($value, $normalise_values);
             }
 
             return $normalise_values;
         }
+        elsif ($string =~ /\&/) {
+            my $normalise_values = [];
+            my @values = split('\&', $string);
+            foreach my $value (@values) {
+                push @$normalise_values, $self->parse_condition_values($value);
+            }
+
+            if (defined $valueset) {
+              return $normalise_values;
+            }
+            else {
+                return [$normalise_values];
+            }
+        }
         else {
-            return $string;
+            return $self->clean_up_whitespace($string);
         }
     }
 
