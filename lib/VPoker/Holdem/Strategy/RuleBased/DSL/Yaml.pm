@@ -55,8 +55,12 @@ sub load_file {
         $rule_table = $self->create($strategy, $string);
         $strategy->decision($name, $rule_table);
 
-        foreach my $key (keys %{$rule_table->ruleset}) {
-            $strategy->decision(sprintf("%s->%s", $name, $key), $rule_table->ruleset($key));
+        if ($name !~ /^_/) {
+
+            foreach my $key (keys %{$rule_table->ruleset}) {
+                $rule_table->ruleset($key);
+                $strategy->decision(sprintf("%s->%s", $name, $key), $rule_table->ruleset($key));
+            }
         }
     };
 
@@ -87,7 +91,6 @@ sub read_file {
 
 sub create {
     my ($self, $strategy, $string) = @_;
-    print $string;
     my ($yaml, $arrayref, $yaml_string) = Load($string);
 
     my $rule_table = $self->_create_rule_table($strategy, $yaml);
