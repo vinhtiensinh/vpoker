@@ -97,11 +97,12 @@ my $rule_table_specific = $syntax_yaml->create($strategy,'
 my $rule_table_global = $syntax_yaml->create($strategy, '
 - check raise:
     - betting. nobet: check
-    - betting. bet: raise
+    - betting. bet: raise, call
 ');
 
 $strategy->decision('preflop', $rule_table);
 $strategy->decision('specific', $rule_table_specific);
+$strategy->decision('specific->pair', $rule_table_specific->ruleset('pair'));
 $strategy->decision('_global', $rule_table_global);
 
 test_simple_rule($rule_table, 0, {'hole cards' => 'AA' });
@@ -112,7 +113,7 @@ test_simple_rule($specific_pair, 0, {'hand' => [['pair', 'top kicker']]}, 'raise
 
 my $check_raise = $checked_table->rules->[1];
 test_simple_rule($check_raise, 0, {'betting' => 'nobet'}, 'check');
-test_simple_rule($check_raise, 1, {'betting' => 'bet'}, 'raise');
+test_simple_rule($check_raise, 1, {'betting' => 'bet'}, 'raise, call');
 
 is(
     $checked_table->rules->[2]->action,

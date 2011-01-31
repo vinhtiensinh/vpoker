@@ -26,11 +26,7 @@ sub rules {
     my ($self) = @_;
     my $rules = [];
     foreach my $rule_id (@{$self->order_of_execution}) {
-        if ($rule_id =~ /\-\>/) {
-            my ($decision_name, $rulename) = split('->', $rule_id);
-            push @$rules, $self->strategy->decision($decision_name)->ruleset($rulename);
-        }
-        elsif($self->ruleset($rule_id)) {
+        if($self->ruleset($rule_id)) {
             my $rule = $self->ruleset($rule_id);
             push @$rules, $rule;
         }
