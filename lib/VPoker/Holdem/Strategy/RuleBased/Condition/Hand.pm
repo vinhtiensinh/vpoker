@@ -283,7 +283,7 @@ sub _build_patterns {
             return $strength->is_trip &&
                    $strength->trip_card->rank == $self->strategy->board->high_card->rank;
         },
-        '$int$[opt] over cards' => sub {
+        '$int$[opt] over $card|cards$' => sub {
             my ($self, $number) = @_;
 
             my $over_cards = 0;
