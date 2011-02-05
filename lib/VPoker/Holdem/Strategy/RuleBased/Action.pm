@@ -85,6 +85,9 @@ sub _random_true {
 
 sub validate {
   my $self = shift;
+
+  return $self->TRUE if $self->_is_syntastically_unused_action;
+
   my @actions = split(',', $self->action);
   foreach my $action (@actions) {
     $action =~ s/^\s*//g;
@@ -120,10 +123,16 @@ sub validate {
 
 sub _valid_action {
   my ($self, $action) = @_;
+
   return $self->_action_is_any_of(
       $action,
       'bet', 'call', 'fold', 'raise', 'check'
   );
+}
+
+sub _is_syntastically_unused_action {
+    my ($self) = @_;
+    return $self->action =~ /^<.*>$/;
 }
 
 sub is_satisfied {

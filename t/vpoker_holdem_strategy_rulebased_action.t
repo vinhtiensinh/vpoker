@@ -3,12 +3,26 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 
-use Test::More tests => 4;
+use Test::More qw(no_plan);
 use VPoker::Test::Table;
 use VPoker::Holdem::Strategy::RuleBased::ConditionFactory;
 use VPoker::Test::ConditionTester;
 use VPoker::Holdem::Strategy::RuleBased::ActionFactory;
 use VPoker::Holdem::Strategy::RuleBased::Limit;
+
+# accept any action inside <> as a template place holder
+{
+  my $autoplayerStrategy = VPoker::Holdem::Strategy::RuleBased::Limit->new();
+  my $action = VPoker::Holdem::Strategy::RuleBased::Action->new(
+    strategy => $autoplayerStrategy,
+    action => '<not defined>'
+  );
+
+  ok(
+    $action->validate,
+    'should accept <not defined> action'
+  );
+}
 
 # test action calling the strategy custom rule table.
 {
