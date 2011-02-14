@@ -61,7 +61,7 @@ sub _build_patterns {
 
         },
 
-        '$>|<|<=|>=$[opt] $int$[opt] over card' => sub {
+        '$>|<|<=|>=$[opt] $int$[opt] over $card|cards$' => sub {
             my ($self,$compare, $number) = @_;
             my $numberOfOverCard = 0;
 
