@@ -60,6 +60,8 @@ $rule_table = $syntax_yaml->create($strategy, '
 
 - Hole Cards. KK:
       use: *AA
+      rules:
+          - Board. suited: bet
       with:
         Board. trip: raise
 ');

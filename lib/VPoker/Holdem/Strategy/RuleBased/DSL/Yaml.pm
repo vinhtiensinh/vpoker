@@ -102,6 +102,45 @@ sub _create_rule_table {
 
     if (ref($yaml) eq 'ARRAY') {
         my $rule_table = VPoker::Holdem::Strategy::RuleBased::RuleTable->new(strategy => $strategy);
+        $self->_populate_strategy_rules($rule_table, $strategy, $yaml);
+        return $rule_table;
+    }
+    elsif (ref($yaml) eq 'HASH') {
+
+        my $rule_table = undef;
+
+        if ($yaml->{'use'}) {
+            $rule_table = $self->_create_rule_table($strategy, $yaml->{'use'});
+        }
+
+        if ($yaml->{'rules'}) {
+            if ($rule_table) {
+                $self->_populate_strategy_rules($rule_table, $strategy, $yaml->{'rules'});
+            }
+            else {
+                $rule_table = $self->_create_rule_table($strategy, $yaml->{'rules'});
+            }
+        }
+
+        if ($yaml->{'with'}) {
+            while (my ($key, $value) = each(%{$yaml->{'with'}})) {
+                if ($key =~ /\./) {
+                  my $rule = $self->_create_rule($strategy, $key, $value);
+                  $rule_table->new_named_rule(
+                      $rule->stringify_conditions, $rule
+                  );
+                }
+                else {
+                  $rule_table->new_named_rule($key, $self->_create_action($strategy,$value));
+                }
+            }
+        }
+        return $rule_table;
+    }
+
+    sub _populate_strategy_rules {
+        my ($self, $rule_table, $strategy, $yaml) = @_;
+
         foreach my $rule (@$yaml) {
             unless (ref($rule)) {
                 $rule_table->add_order_of_execution($rule);
@@ -120,34 +159,7 @@ sub _create_rule_table {
                 }
             }
         }
-        return $rule_table;
-    }
-    elsif (ref($yaml) eq 'HASH') {
 
-        my $rule_table = undef;
-
-        if ($yaml->{'use'}) {
-            $rule_table = $self->_create_rule_table($strategy, $yaml->{'use'});
-        }
-
-        if ($yaml->{'rules'}) {
-            $rule_table = $self->_create_rule_table($strategy, $yaml->{'rules'});
-        }
-
-        if ($yaml->{'with'}) {
-            while (my ($key, $value) = each(%{$yaml->{'with'}})) {
-                if ($key =~ /\./) {
-                  my $rule = $self->_create_rule($strategy, $key, $value);
-                  $rule_table->new_named_rule(
-                      $rule->stringify_conditions, $rule
-                  );
-                }
-                else {
-                  $rule_table->new_named_rule($key, $self->_create_action($strategy,$value));
-                }
-            }
-        }
-        return $rule_table;
     }
 
     sub _create_action {
