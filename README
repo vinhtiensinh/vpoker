@@ -3,7 +3,7 @@ It has a prebuilt integration with openholdem.org
 You define your rules in one or multiples yaml files. Put them in a directory
 and then load the strategy with bot file.
 
-=Examples:
+==Examples:
 
 preflop.yaml.vpk:
 
@@ -42,15 +42,17 @@ with:
         - call bet
         - call raise behind
 
-=Rules
+  ...etc...
+
+==Rules
   There are many prefedine rules on:
-  *Hole Cards
-  *Hand
-  *Flop
-  *Turn
-  *River
-  *Bet Round
-  *Pot
+  * Hole Cards
+  * Hand
+  * Flop
+  * Turn
+  * River
+  * Bet Round
+  * Pot
   
   ....
 
