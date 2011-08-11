@@ -7,7 +7,6 @@ and then load the strategy with bot file.
 
 preflop.yaml.vpk:
 
-<code>
     rules:
         - Hole Cards. AA; KK: ~check raise late position or bet
 
@@ -44,8 +43,6 @@ preflop.yaml.vpk:
             - call raise behind
 
       ...etc...
-
-</code>
 
 ==Rules
   There are many prefedine rules on:
