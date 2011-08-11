@@ -5,7 +5,7 @@ and then load the strategy with bot file.
 
 =Examples:
 
-preflop.yaml.vpoker:
+preflop.yaml.vpk:
 
 rules:
     - Hole Cards. AA; KK: ~check raise late position or bet
