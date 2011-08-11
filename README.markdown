@@ -8,42 +8,42 @@ and then load the strategy with bot file.
 preflop.yaml.vpk:
 
 <code>
-rules:
-    - Hole Cards. AA; KK: ~check raise late position or bet
+    rules:
+        - Hole Cards. AA; KK: ~check raise late position or bet
 
-    - Hole Cards. QQ; JJ: bet
+        - Hole Cards. QQ; JJ: bet
 
-    - Hole Cards. TT; 99:
-        - Position. early: ~limp or call one bet
-        - call bet or open
+        - Hole Cards. TT; 99:
+            - Position. early: ~limp or call one bet
+            - call bet or open
 
-    - Hole Cards. 88; 77:
-        - Position. early: ~limp or call one bet
-        - ~enough callers limp or call one bet
- 
-with:
-    check raise late position or bet:
-        - Preflop Betting. fold to me | Position. button: check raise
-        - bet
-  
-    enough callers limp or call one bet:
-        - Action Round. 1 | Player. players before >= 4: ~limp or call one bet
-        - Action Round. 2 | Betting. bet; raised: call
-  
-    enough callers limp:
-        - Action Round. 1 | Player. players before >= 4: ~nobet limp
-        - Action Round. 2 | Betting. bet: call
-  
-    nobet limp:
-        - limp
-        - call bet behind
-  
-    limp or call one bet:
-        - limp
-        - call bet
-        - call raise behind
+        - Hole Cards. 88; 77:
+            - Position. early: ~limp or call one bet
+            - ~enough callers limp or call one bet
+     
+    with:
+        check raise late position or bet:
+            - Preflop Betting. fold to me | Position. button: check raise
+            - bet
+      
+        enough callers limp or call one bet:
+            - Action Round. 1 | Player. players before >= 4: ~limp or call one bet
+            - Action Round. 2 | Betting. bet; raised: call
+      
+        enough callers limp:
+            - Action Round. 1 | Player. players before >= 4: ~nobet limp
+            - Action Round. 2 | Betting. bet: call
+      
+        nobet limp:
+            - limp
+            - call bet behind
+      
+        limp or call one bet:
+            - limp
+            - call bet
+            - call raise behind
 
-  ...etc...
+      ...etc...
 
 </code>
 
