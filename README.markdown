@@ -3,7 +3,7 @@ It has a prebuilt integration with openholdem.org
 You define your rules in one or multiples yaml files. Put them in a directory
 and then load the strategy with bot file.
 
-==Examples:
+## Examples:
 
 preflop.yaml.vpk:
 
@@ -44,19 +44,21 @@ preflop.yaml.vpk:
 
       ...etc...
 
-==Rules
+## Rules
+
   There are many prefedine rules on:
-  * Hole Cards
-  * Hand
-  * Flop
-  * Turn
-  * River
-  * Bet Round
-  * Pot
+
+* Hole Cards
+* Hand
+* Flop
+* Turn
+* River
+* Bet Round
+* Pot
   
   ....
 
-== Contributing to negative-method
+## Contributing to negative-method
  
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
